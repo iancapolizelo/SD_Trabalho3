@@ -13,11 +13,15 @@ class cliente():
     uriCliente = ""
 
     def __init__(self):
-        print("Bem vindo ao Gerenciador de Estoque!\n\n")
-        self.nome = input("Informe seu nome de registro no servidor: ")
+        self.nome = input(
+            "Bem vindo ao Gerenciador de Estoque!\n\nInforme seu nome de registro no servidor: ")
 
     def pedeCriar(self, uriCliente):
         self.uriCliente = uriCliente
+
+    @Pyro5.api.expose
+    def enviarMensagem(self, mensagem):
+        print(mensagem)
 
 
 class CallbackHandler(object):
@@ -37,36 +41,45 @@ if __name__ == '__main__':
     daemon.register(callback)
 
     servidorNomes = Pyro5.api.locate_ns()
-    uriMercadoLeiloes = servidorNomes.lookup("Mercado de Leiloes")
-    servidorMercadoLeiloes = Pyro5.api.Proxy(uriMercadoLeiloes)
-    servidorMercadoLeiloes.registrarCliente(
+    uriGerenciadorEstoque = servidorNomes.lookup("Gerenciador de Estoque")
+    servidorGerenciadorEstoque = Pyro5.api.Proxy(uriGerenciadorEstoque)
+    servidorGerenciadorEstoque.registrarCliente(
         clienteInstancia.nome, clienteInstancia.uriCliente)
+    
     while (1):
         print("As opções do servidor são:\n")
-        print("1 - Criar leilão\n")
-        print("2 - Listar leilões\n")
-        print("3 - Dar lance em um leilão\n")
+        print("1 - Cadastrar novo produto\n")
+        print("2 - Adicionar produto existente\n")
+        print("3 - Retirar produto\n")
+        print("4 - Listar produtos\n\n")
         opcao = input()
         if opcao == '1':
-            nomeProduto = input("Qual o nome do produto?")
-            descriçãoProduto = input("Qual a descrição do produto?")
-            preçoBase = input("Qual o preço mínimo ?")
-            limiteTempo = int(input(
-                "Em quantos segundos deve expirar?"))
-            servidorMercadoLeiloes.criarLeilao(
-                nomeProduto, descriçãoProduto, preçoBase, limiteTempo, clienteInstancia.uriCliente, clienteInstancia.nome)
+            codigoProduto = input("Qual o código do produto?\n")
+            nomeProduto = input("Qual nome do produto?\n")
+            descricaoProduto = input("Qual a descrição do produto? \n")
+            quantidadeProduto = input("Qual a quantidade do produto? \n")
+            precoUnidadeProduto = input("Qual o preço por unidade do produto? \n")
+            estoqueMinimoProduto = input("Qual o estoque mínimo do produto? \n")
+
+            servidorGerenciadorEstoque.cadastrarProdutoNovo(
+                clienteInstancia.nome, clienteInstancia.uriCliente, codigoProduto, nomeProduto, descricaoProduto, quantidadeProduto, precoUnidadeProduto, estoqueMinimoProduto)
+
         if opcao == '2':
-            lista = servidorMercadoLeiloes.listarLeiloes()
-            for name in lista:
-                print("  %s " % (name))
+            codigoProduto = input("Qual o código do produto? ")
+            quantidadeProduto = input("Qual a quantidade que deseja adicionar? ")
+
+            servidorGerenciadorEstoque.adicionarProduto(
+                    codigoProduto, quantidadeProduto)
+            
+
         if opcao == '3':
-            nomeProduto = input("Qual o nome do produto em leilão?")
-            valorLance = input("Qual o valor do seu lance?")
-            resultadoLance = servidorMercadoLeiloes.darLance(
-                valorLance, nomeProduto, clienteInstancia.uriCliente, clienteInstancia.nome)
-            if (resultadoLance == 1):
-                print("Lance Aceito")
-            if (resultadoLance == 0):
-                print("Lance Negado")
-            if (resultadoLance == 2):
-                print("Não existe Leilao com esse nome")
+            codigoProduto = input("Qual o código do produto? ")
+            quantidadeProduto = input("Qual a quantidade do produto? ")
+            servidorGerenciadorEstoque.retirarProduto(
+                    codigoProduto, quantidadeProduto)
+
+        if opcao == '4':
+            produtos = servidorGerenciadorEstoque.getProdutos()
+            for produto in produtos:
+                print("Código: " + str(produto.codigo) + " Nome: " + produto.nome + "\n")
+            
