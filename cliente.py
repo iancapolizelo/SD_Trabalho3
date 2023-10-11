@@ -7,6 +7,15 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 
+"""Classe cliente, que é responsável por fazer a comunicação com o servidor de nomes e com o servidor de estoque
+    Atributos:
+        nome: nome do cliente
+        uriCliente: uri do cliente
+    Métodos:
+        pedeCriar: pede para criar o cliente
+        inicializaDaemon: inicializa o daemon do cliente
+        notificacao: notifica o cliente de algum acontecimento
+            notificação é exposta para o servidor, para que possa acontecer a comunicação"""
 
 class cliente():
     nome = ""
@@ -35,6 +44,8 @@ if __name__ == '__main__':
     daemon = Pyro5.api.Daemon()
     uriCliente = daemon.register(clienteInstancia)
     clienteInstancia.pedeCriar(uriCliente)
+
+    # Inicializa o daemon em uma thread separada para que o cliente possa receber notificações e não fique travado esperando resposta do servidor
     daemonThread = threading.Thread(
         target=clienteInstancia.inicializaDaemon, args=(daemon,), daemon=True)
     daemonThread.start()
@@ -42,9 +53,11 @@ if __name__ == '__main__':
     servidorNomes = Pyro5.api.locate_ns()
     uriGerenciadorEstoque = servidorNomes.lookup("Gerenciador de Estoque")
     servidorGerenciadorEstoque = Pyro5.api.Proxy(uriGerenciadorEstoque)
+
     servidorGerenciadorEstoque.registrarCliente(
         clienteInstancia.nome, clienteInstancia.uriCliente)
     
+    # Interface do cliente
     while (1):
         print("As opções do servidor são:\n")
         print("1 - Cadastrar novo produto\n")

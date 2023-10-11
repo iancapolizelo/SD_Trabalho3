@@ -11,12 +11,12 @@ class produto:
     quantidade = 0
     precoUnidade = ""
     estoqueMinimo = 0
-    acabou = 0
     estoqueBaixo = 0
-    uriGestor = ""
-    nomeGestor = ""
+    acabou = 0
+    uriGestorCriador = ""
+    nomeGestorCriador = ""
     listaInteressados = {}
-    timestampCadastro = ''
+    registrosMovimentacao = {}
 
     def __init__(self, nomeGestor, uriGestor, codigo, nome, descricao, quantidade, precoUnidade, estoqueMinimo):
         self.codigo = codigo
@@ -29,8 +29,9 @@ class produto:
         self.estoqueBaixo = 0
         self.listaInteressados[nomeGestor] = uriGestor
         self.timestampCadastro = strftime("%d/%m/%Y - %H:%M:%S", gmtime())
-        self.nomeGestor = nomeGestor
-        self.uriGestor = uriGestor
+        self.nomeGestorCriador = nomeGestor
+        self.uriGestorCriador = uriGestor
+        self.registrosMovimentacao['Cadastro'] = self.timestampCadastro
 
     
     def getCodigoProduto(self):
@@ -54,27 +55,22 @@ class produto:
     def getAcabouProduto(self):
         return self.acabou
     
+    def getEstoqueBaixoProduto(self):
+        return self.estoqueBaixo
+    
+    def getUriGestorCriadorProduto(self):
+        return self.uriGestorCriador
+    
+    def getNomeGestorCriadorProduto(self):
+        return self.nomeGestorCriador
+    
     def getListaInteressadosProduto(self):
         return self.listaInteressados
     
-    def getUriClienteProduto(self):
-        return self.uriCliente
+    def getRegistrosMovimentacaoProduto(self):
+        return self.registrosMovimentacao
     
-    def getTimestampCadastroProduto(self):
-        return self.timestampCadastro
-    
-    def setEstoqueBaixo(self, estoqueBaixo):
-        self.estoqueBaixo = estoqueBaixo
-
-    def attQuantidade(self, quantidade):
-        self.quantidade = quantidade
-        if quantidade <= self.estoqueMinimo:
-            self.estoqueBaixo = 1
-        if quantidade <= 0:
-            self.acabou = 1
-
-    def getNomeGestor(self):
-        return self.nomeGestor
-    
-    def getUriGestor(self):
-        return self.uriGestor
+    def listaMovimentacao(self):
+        
+        for registro in self.registrosMovimentacao.keys():
+            print(registro + " - " + self.registrosMovimentacao[registro])

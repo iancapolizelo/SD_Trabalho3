@@ -2,7 +2,7 @@ COMEÇAR SERVIDOR DE NOMES
 python -m Pyro5.nameserver
 
 RODAR O SERVIDOR
-python3 servidor.py
+python servidor.py
 
 RODAR O CLIENTE
-python3 cliente.py
+python cliente.py
