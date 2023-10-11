@@ -15,7 +15,7 @@ class produto:
     estoqueBaixo = 0
     uriGestor = ""
     nomeGestor = ""
-    listaInteressados = []
+    listaInteressados = {}
     timestampCadastro = ''
 
     def __init__(self, nomeGestor, uriGestor, codigo, nome, descricao, quantidade, precoUnidade, estoqueMinimo):
@@ -27,7 +27,7 @@ class produto:
         self.estoqueMinimo = estoqueMinimo
         self.acabou = 0
         self.estoqueBaixo = 0
-        self.listaInteressados.append(uriGestor)
+        self.listaInteressados[nomeGestor] = uriGestor
         self.timestampCadastro = strftime("%d/%m/%Y - %H:%M:%S", gmtime())
         self.nomeGestor = nomeGestor
         self.uriGestor = uriGestor
@@ -66,8 +66,12 @@ class produto:
     def setEstoqueBaixo(self, estoqueBaixo):
         self.estoqueBaixo = estoqueBaixo
 
-    def setQuantidadeProduto(self, quantidade):
+    def attQuantidade(self, quantidade):
         self.quantidade = quantidade
+        if quantidade <= self.estoqueMinimo:
+            self.estoqueBaixo = 1
+        if quantidade <= 0:
+            self.acabou = 1
 
     def getNomeGestor(self):
         return self.nomeGestor

@@ -19,12 +19,10 @@ class cliente():
     def pedeCriar(self, uriCliente):
         self.uriCliente = uriCliente
 
-    @Pyro5.api.expose
-    def enviarMensagem(self, mensagem):
-        print(mensagem)
+    def inicializaDaemon(self, daemon):
+        daemon.requestLoop()
 
 
-class CallbackHandler(object):
     @Pyro5.api.expose
     @Pyro5.api.callback
     def notificacao(self, acontecimento):
@@ -37,8 +35,9 @@ if __name__ == '__main__':
     daemon = Pyro5.api.Daemon()
     uriCliente = daemon.register(clienteInstancia)
     clienteInstancia.pedeCriar(uriCliente)
-    callback = CallbackHandler()
-    daemon.register(callback)
+    daemonThread = threading.Thread(
+        target=clienteInstancia.inicializaDaemon, args=(daemon,), daemon=True)
+    daemonThread.start()
 
     servidorNomes = Pyro5.api.locate_ns()
     uriGerenciadorEstoque = servidorNomes.lookup("Gerenciador de Estoque")
@@ -69,17 +68,15 @@ if __name__ == '__main__':
             quantidadeProduto = input("Qual a quantidade que deseja adicionar? ")
 
             servidorGerenciadorEstoque.adicionarProduto(
-                    codigoProduto, quantidadeProduto)
+                    clienteInstancia.nome, codigoProduto, quantidadeProduto)
             
 
         if opcao == '3':
             codigoProduto = input("Qual o código do produto? ")
             quantidadeProduto = input("Qual a quantidade do produto? ")
             servidorGerenciadorEstoque.retirarProduto(
-                    codigoProduto, quantidadeProduto)
+                    clienteInstancia.nome, codigoProduto, quantidadeProduto)
 
         if opcao == '4':
-            produtos = servidorGerenciadorEstoque.getProdutos()
-            for produto in produtos:
-                print("Código: " + str(produto.codigo) + " Nome: " + produto.nome + "\n")
+            servidorGerenciadorEstoque.listarProdutos(clienteInstancia.nome)
             
