@@ -59,19 +59,20 @@ if __name__ == '__main__':
     
     # Interface do cliente
     while (1):
-        print("As opções do servidor são:\n")
-        print("1 - Cadastrar novo produto\n")
-        print("2 - Adicionar produto existente\n")
-        print("3 - Retirar produto\n")
-        print("4 - Listar produtos\n\n")
+        print("As opções do servidor são:")
+        print("1 - Cadastrar novo produto")
+        print("2 - Adicionar produto existente")
+        print("3 - Retirar produto")
+        print("4 - Listar produtos")
+        print("5 - Gerar relatórios\n")
         opcao = input()
         if opcao == '1':
-            codigoProduto = input("Qual o código do produto?\n")
-            nomeProduto = input("Qual nome do produto?\n")
-            descricaoProduto = input("Qual a descrição do produto? \n")
-            quantidadeProduto = input("Qual a quantidade do produto? \n")
-            precoUnidadeProduto = input("Qual o preço por unidade do produto? \n")
-            estoqueMinimoProduto = input("Qual o estoque mínimo do produto? \n")
+            codigoProduto = input("Qual o código do produto? ")
+            nomeProduto = input("Qual nome do produto? ")
+            descricaoProduto = input("Qual a descrição do produto? ")
+            quantidadeProduto = input("Qual a quantidade do produto? ")
+            precoUnidadeProduto = input("Qual o preço por unidade do produto? ")
+            estoqueMinimoProduto = input("Qual o estoque mínimo do produto? ")
 
             servidorGerenciadorEstoque.cadastrarProdutoNovo(
                 clienteInstancia.nome, clienteInstancia.uriCliente, codigoProduto, nomeProduto, descricaoProduto, quantidadeProduto, precoUnidadeProduto, estoqueMinimoProduto)
@@ -92,4 +93,33 @@ if __name__ == '__main__':
 
         if opcao == '4':
             servidorGerenciadorEstoque.listarProdutos(clienteInstancia.nome)
+
+        if opcao == '5':
+            print("As opções de relatório são:")
+            print("a - Relatório de produtos em estoque")
+            print("b - Relatório de produtos que atingiram o estoque mínimo")
+            print("c - Relatório de produtos que acabaram")
+            print("d - Relatório do fluxo de movimentação por período")
+            print("e - Relatório do produtos sem movimentação por período")
+            opcaoRelatorio = input()
+
+            if opcaoRelatorio == 'a':
+                servidorGerenciadorEstoque.relatorioProdutosEstoque(clienteInstancia.nome)
+
+            if opcaoRelatorio == 'b':
+                servidorGerenciadorEstoque.relatorioProdutosEstoqueMinimo(clienteInstancia.nome)
+
+            if opcaoRelatorio == 'c':
+                servidorGerenciadorEstoque.relatorioProdutosAcabaram(clienteInstancia.nome)
+
+            if opcaoRelatorio == 'd':
+                dataInicio = input("Qual a data de início do relatório? ")
+                dataFim = input("Qual a data de fim do relatório? ")
+                servidorGerenciadorEstoque.relatorioMovimentacaoPeriodo(clienteInstancia.nome, dataInicio, dataFim)
+
+            if opcaoRelatorio == 'e':
+                dataInicio = input("Qual a data de início do relatório? ")
+                dataFim = input("Qual a data de fim do relatório? ")
+                servidorGerenciadorEstoque.relatorioSemMovimentacaoPeriodo(clienteInstancia.nome, dataInicio, dataFim)
+                
             

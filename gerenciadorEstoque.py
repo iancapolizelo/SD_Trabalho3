@@ -2,7 +2,6 @@ from __future__ import print_function
 import Pyro5.api
 import Pyro5.server
 from produto import produto
-from gestor import gestor
 from datetime import datetime
 from time import gmtime, strftime
 from flask import Flask, Response
@@ -32,7 +31,7 @@ class gerenciadorEstoque(object):
     
         self.__listaProdutos[codigo] = produto(nomeGestor, uriGestor, codigo, nome, descricao, quantidade, precoUnidade, estoqueMinimo)
 
-        print(nomeGestor +  " cadastrou produto " + nome + " com código " + str(codigo) + "no estoque.\n")
+        print(nomeGestor +  " cadastrou produto " + nome + " com código " + str(codigo) + " no estoque.\n")
         mensagem = "Novo produto cadastrado com sucesso"
         user = Pyro5.api.Proxy(self.__listaClientes[nomeGestor])
         user.notificacao(mensagem)
@@ -47,7 +46,7 @@ class gerenciadorEstoque(object):
 
         for produto in self.__listaProdutos.keys():
             horaCad = self.__listaProdutos[produto].registrosMovimentacao['Cadastro']
-            mensagem = "Código do produto: " + produto + " Nome: " + self.__listaProdutos[produto].nome + " Quantidade: " + str(self.__listaProdutos[produto].quantidade) + " Estoque mínimo: " + self.__listaProdutos[produto].estoqueMinimo + "Cadastrado em: " + horaCad +"\n"
+            mensagem = "Código do produto: " + produto + " Nome: " + self.__listaProdutos[produto].nome + " Quantidade: " + str(self.__listaProdutos[produto].quantidade) + " Estoque mínimo: " + self.__listaProdutos[produto].estoqueMinimo + " Cadastrado em: " + horaCad +"\n"
             user.notificacao(mensagem)
 
 
@@ -142,3 +141,35 @@ class gerenciadorEstoque(object):
         mensagem = "Registro do gestor " + nomeCliente + " realizado com sucesso."
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
         user.notificacao(mensagem)
+
+    #Método para gerar relatório de produtos que acabaram
+    @app.route('/produto', methods=['POST'])
+    @Pyro5.server.expose
+    def relatorioProdutosEstoque(self, nomeCliente):
+        user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
+        mensagem = "Relatório de produtos em estoque: \n"
+        user.notificacao(mensagem)
+
+        for produto in self.__listaProdutos.keys():
+                
+            mensagem = "Código do produto: " + produto
+            user.notificacao(mensagem)
+
+            mensagem = "Nome: " + self.__listaProdutos[produto].nome
+            user.notificacao(mensagem)
+
+            mensagem = "Quantidade: " + str(self.__listaProdutos[produto].quantidade)
+            user.notificacao(mensagem)
+
+            mensagem = "Estoque mínimo: " + str(self.__listaProdutos[produto].estoqueMinimo)
+            user.notificacao(mensagem)
+
+            mensagem = "Registros: "
+            user.notificacao(mensagem)
+
+            for registro in self.__listaProdutos[produto].registrosMovimentacao.keys():
+                mensagem = "  " + registro + " - " + self.__listaProdutos[produto].registrosMovimentacao[registro]
+                user.notificacao(mensagem)
+
+            mensagem = "\n"
+            user.notificacao(mensagem)
