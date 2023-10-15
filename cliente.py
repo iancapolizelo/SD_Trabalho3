@@ -97,29 +97,29 @@ if __name__ == '__main__':
         if opcao == '5':
             print("As opções de relatório são:")
             print("a - Relatório de produtos em estoque")
-            print("b - Relatório de produtos que atingiram o estoque mínimo")
+            print("b - Relatório de registros de movimentação de produtos")
             print("c - Relatório de produtos que acabaram")
             print("d - Relatório do fluxo de movimentação por período")
-            print("e - Relatório do produtos sem movimentação por período")
+            print("e - Relatório do produtos sem saída por período")
             opcaoRelatorio = input()
 
             if opcaoRelatorio == 'a':
                 servidorGerenciadorEstoque.relatorioProdutosEstoque(clienteInstancia.nome)
 
             if opcaoRelatorio == 'b':
-                servidorGerenciadorEstoque.relatorioProdutosEstoqueMinimo(clienteInstancia.nome)
+                servidorGerenciadorEstoque.relatorioRegistros(clienteInstancia.nome)
 
             if opcaoRelatorio == 'c':
                 servidorGerenciadorEstoque.relatorioProdutosAcabaram(clienteInstancia.nome)
 
             if opcaoRelatorio == 'd':
-                dataInicio = input("Qual a data de início do relatório? ")
-                dataFim = input("Qual a data de fim do relatório? ")
-                servidorGerenciadorEstoque.relatorioMovimentacaoPeriodo(clienteInstancia.nome, dataInicio, dataFim)
+                dataInicio = input("Qual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
+                dataFim = input("Qual a data de fim do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
+                servidorGerenciadorEstoque.relatorioFluxoMovimentacao(clienteInstancia.nome, dataInicio, dataFim)
 
             if opcaoRelatorio == 'e':
-                dataInicio = input("Qual a data de início do relatório? ")
-                dataFim = input("Qual a data de fim do relatório? ")
-                servidorGerenciadorEstoque.relatorioSemMovimentacaoPeriodo(clienteInstancia.nome, dataInicio, dataFim)
+                dataInicio = input("Qual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
+                dataFim = input("Qual a data de fim do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
+                servidorGerenciadorEstoque.relatorioProdutosSemSaida(clienteInstancia.nome, dataInicio, dataFim)
                 
             

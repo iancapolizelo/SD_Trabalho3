@@ -16,7 +16,6 @@ class produto:
     uriGestorCriador = ""
     nomeGestorCriador = ""
     listaInteressados = {}
-    registrosMovimentacao = {}
 
     def __init__(self, nomeGestor, uriGestor, codigo, nome, descricao, quantidade, precoUnidade, estoqueMinimo):
         self.codigo = codigo
@@ -31,7 +30,6 @@ class produto:
         self.timestampCadastro = strftime("%d/%m/%Y - %H:%M:%S", gmtime())
         self.nomeGestorCriador = nomeGestor
         self.uriGestorCriador = uriGestor
-        self.registrosMovimentacao['Cadastro'] = self.timestampCadastro
 
     
     def getCodigoProduto(self):
@@ -70,7 +68,3 @@ class produto:
     def getRegistrosMovimentacaoProduto(self):
         return self.registrosMovimentacao
     
-    def listaMovimentacao(self):
-        
-        for registro in self.registrosMovimentacao.keys():
-            print(registro + " - " + self.registrosMovimentacao[registro])
