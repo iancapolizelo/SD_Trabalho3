@@ -6,6 +6,9 @@ from datetime import datetime
 from time import gmtime, strftime
 from flask import Flask, Response
 from apscheduler.schedulers.background import BackgroundScheduler
+from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
 
 #Gerenciador de estoque
 
@@ -22,9 +25,10 @@ class gerenciadorEstoque(object):
     @app.route('/produto', methods=['POST'])
     @Pyro5.server.expose
     def cadastrarProdutoNovo(self, nomeGestor, uriGestor, codigo, nome, descricao, quantidade, precoUnidade, estoqueMinimo):
+
         if codigo in self.__listaProdutos:
-            print(nomeGestor + 'tentou cadastradar produto que já existe. \n')
-            mensagem = 'Produto já existe. \n'
+            print('\n' + nomeGestor + ' tentou cadastradar produto que já existe. \n')
+            mensagem = '\nProduto já existe. \n'
             user = Pyro5.api.Proxy(self.__listaClientes[nomeGestor])
             user.notificacao(mensagem)
             return 1
@@ -36,7 +40,7 @@ class gerenciadorEstoque(object):
         evento = "produto " + codigo + " cadastrado"
         self.__registros[horaCadastro] = evento
 
-        mensagem = "Novo produto cadastrado com sucesso"
+        mensagem = "\nNovo produto cadastrado com sucesso"
         user = Pyro5.api.Proxy(self.__listaClientes[nomeGestor])
         user.notificacao(mensagem)
         return 0
@@ -46,7 +50,7 @@ class gerenciadorEstoque(object):
     @Pyro5.server.expose
     def listarProdutos(self, nomeCliente):
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
-        mensagem = "Lista de produtos: \n"
+        mensagem = "\nLista de produtos: \n"
 
         for produto in self.__listaProdutos.keys():
             mensagem = "Código do produto: " + produto + " Nome: " + self.__listaProdutos[produto].nome + " Quantidade: " + str(self.__listaProdutos[produto].quantidade) + " Estoque mínimo: " + self.__listaProdutos[produto].estoqueMinimo +"\n"
@@ -57,6 +61,7 @@ class gerenciadorEstoque(object):
     @app.route('/produto', methods=['POST'])    
     @Pyro5.server.expose
     def retirarProduto(self,nomeCliente, codigo, qtdRetirar):
+
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
 
         for chave in self.__listaProdutos.keys(): #Verifica se o produto existe
@@ -72,8 +77,8 @@ class gerenciadorEstoque(object):
                         evento = "retirado " + str(qtdRetirar) + " unidades do produto " + self.__listaProdutos[chave].codigo + " do estoque"
                         self.__registros[horarioEvento] = evento
 
-                        print("Retirou " + str(qtdRetirar) + " unidades de " + self.__listaProdutos[chave].nome + " do estoque. \n")
-                        mensagem = "Retirou " + str(qtdRetirar) + " unidades de " + self.__listaProdutos[chave].nome + " do estoque. \n"
+                        print("\nRetirou " + str(qtdRetirar) + " unidades de " + self.__listaProdutos[chave].nome + " do estoque. \n")
+                        mensagem = "\nRetirou " + str(qtdRetirar) + " unidades de " + self.__listaProdutos[chave].nome + " do estoque. \n"
                         user.notificacao(mensagem)
                         return 1
                     else:
@@ -86,34 +91,38 @@ class gerenciadorEstoque(object):
                             evento = "retirado " + qtdRetirar + " unidades do produto " + codigo + " e ele ACABOU"
                             self.__registros[horarioEvento] = evento
 
-                            print("Produto +" + self.__listaProdutos[chave].nome + " acabou. \n")
-                            mensagem = "Você retirou todo o estoque do produto: " + self.__listaProdutos[chave].nome + "\n"
+                            print("\nProduto " + self.__listaProdutos[chave].nome + " acabou. \n")
+                            mensagem = "\nVocê retirou todo o estoque do produto: " + self.__listaProdutos[chave].nome + "\n"
                             user.notificacao(mensagem)
 
-                            mensagem = "Produto: " + self.__listaProdutos[chave].nome + " ACABOU.\n"
-                            user.notificacao(mensagem)
+                            mensagem = "\nProduto: " + self.__listaProdutos[chave].nome + " ACABOU.\n"
+                            userGestor = Pyro5.api.Proxy(self.__listaProdutos[chave].uriGestorCriador)
+                            userGestor.notificacao(mensagem)
+
                             return 1
                         else: #Verifica se o estoque ficará abaixo do mínimo
                             self.__listaProdutos[chave].quantidade = nova_qtd
                             self.__listaProdutos[chave].estoqueBaixo = 1
 
-                            evento = "retirado " + qtdRetirar + "unidades do produto " + codigo + " e ele está ABAIXO DO MÍNIMO" 
+                            evento = "retirado " + qtdRetirar + " unidades do produto " + codigo + " e ele está ABAIXO DO MÍNIMO" 
                             self.__registros[horarioEvento] = evento
 
-                            print("Estoque de " + self.__listaProdutos[chave].nome + " está abaixo do mínimo. \n")
-                            mensagem = "Você retirou " + str(qtdRetirar) + " unidades do produto: " + self.__listaProdutos[chave].nome + "\n"
+                            print("\nEstoque de " + self.__listaProdutos[chave].nome + " está abaixo do mínimo. \n")
+                            mensagem = "\nVocê retirou " + str(qtdRetirar) + " unidades do produto: " + self.__listaProdutos[chave].nome + "\n"
                             user.notificacao(mensagem)
 
-                            mensagem = "Produto: " + self.__listaProdutos[chave].nome + " está ABAIXO DO MÍNIMO.\n"
-                            user.notificacao(mensagem)
+                            mensagem = "\nProduto: " + self.__listaProdutos[chave].nome + " ABAIXO DO ESTOQUE MÍNIMO.\n"
+                            userGestor = Pyro5.api.Proxy(self.__listaProdutos[chave].uriGestorCriador)
+                            userGestor.notificacao(mensagem)
+
                             return 1
                 else:
-                    print("Não foi possível retirar do estoque, estoque insuficiente. \n")
-                    mensagem = "Não foi possível retirar do estoque, estoque insuficiente. \n"
+                    print("\nNão foi possível retirar do estoque, estoque insuficiente. \n")
+                    mensagem = "\nNão foi possível retirar do estoque, estoque insuficiente. \n"
                     user.notificacao(mensagem)
                     return 0
 
-        mensagem = "Produto não existe. \n"
+        mensagem = "\nProduto não existe. \n"
         user.notificacao(mensagem)
         return 0
     
@@ -121,6 +130,7 @@ class gerenciadorEstoque(object):
     @app.route('/produto', methods=['POST'])
     @Pyro5.server.expose
     def adicionarProduto(self,nomeCliente, codigo, qtdAdicionar):
+
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
         horarioEvento = strftime("%d/%m/%Y - %H:%M:%S", gmtime())
 
@@ -137,21 +147,29 @@ class gerenciadorEstoque(object):
                     self.__listaProdutos[chave].acabou = 0
 
                     evento = "produto " + codigo + " voltou ao estoque"
-                    self.__registros[horarioEvento] = evento
+                    horaVoltou = strftime("%d/%m/%Y - %H:%M:%S", gmtime())
+                    self.__registros[horaVoltou] = evento
 
                 if self.__listaProdutos[chave].estoqueBaixo == 1 and nova_qtd >= int(self.__listaProdutos[chave].estoqueMinimo):
                     self.__listaProdutos[chave].estoqueBaixo = 0
 
                     evento = "estoque do produto " + codigo + " voltou ao normal"
-                    self.__registros[horarioEvento] = evento
+                    horaVoltou = strftime("%d/%m/%Y - %H:%M:%S", gmtime())
+                    self.__registros[horaVoltou] = evento
 
 
-                print("Adicionou " + str(qtdAdicionar) + " unidades de " + self.__listaProdutos[chave].nome + " ao estoque. \n")
-                mensagem = "Adicionou " + str(qtdAdicionar) + " unidades de " + self.__listaProdutos[chave].nome + " ao estoque. \n"
+                print("\nAdicionou " + str(qtdAdicionar) + " unidades de " + self.__listaProdutos[chave].nome + " ao estoque. \n")
+                
+                
+                mensagem = '\n'+str(qtdAdicionar) + " unidades de " + self.__listaProdutos[chave].nome + " foram adicionadas ao estoque. \n"
+                userGestor = Pyro5.api.Proxy(self.__listaProdutos[chave].uriGestorCriador)
+                userGestor.notificacao(mensagem)
                 user.notificacao(mensagem)
-                return 1
             
-        print("Não foi possível adicionar ao estoque, produto não existe. \n")
+                return 1
+
+            
+        print("\nNão foi possível adicionar ao estoque, produto não existe. \n")
         return 0
 
     #Método para registrar um novo gestor
@@ -159,16 +177,16 @@ class gerenciadorEstoque(object):
     @Pyro5.server.expose
     def registrarCliente(self, nomeCliente, uriCliente):
         if nomeCliente in self.__listaClientes:
-            print('Cliente já cadastrado. \n')
+            print('\nCliente já cadastrado. \n')
         else:
-            print("Registrou cliente " + nomeCliente + "\n")
+            print("\nRegistrou cliente " + nomeCliente + "\n")
             self.__listaClientes[nomeCliente] = uriCliente
         
         print("Lista de clientes: \n")
         for chave in self.__listaClientes.keys():
             print("Nome= " + chave + " e Uri = " + str(self.__listaClientes[chave]))
 
-        mensagem = "Registro do gestor " + nomeCliente + " realizado com sucesso. \n"
+        mensagem = "\nRegistro do gestor " + nomeCliente + " realizado com sucesso. \n"
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
         user.notificacao(mensagem)
 
@@ -177,7 +195,7 @@ class gerenciadorEstoque(object):
     @Pyro5.server.expose
     def relatorioProdutosEstoque(self, nomeCliente):
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
-        mensagem = "Relatório de produtos em estoque: \n"
+        mensagem = "\nRelatório de produtos em estoque: \n"
         user.notificacao(mensagem)
 
         for produto in self.__listaProdutos.keys():
@@ -212,7 +230,7 @@ class gerenciadorEstoque(object):
     @Pyro5.server.expose
     def relatorioRegistros(self, nomeCliente):
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
-        mensagem = "Relatório de registros: \n"
+        mensagem = "\nRelatório de registros: \n"
         user.notificacao(mensagem)
 
         for registro in self.__registros.keys():
@@ -224,7 +242,7 @@ class gerenciadorEstoque(object):
     @Pyro5.server.expose
     def relatorioProdutosAcabaram(self, nomeCliente):
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
-        mensagem = "Relatório de produtos que acabaram: \n"
+        mensagem = "\nRelatório de produtos que acabaram: \n"
         user.notificacao(mensagem)
 
         for produto in self.__listaProdutos.keys():
@@ -259,7 +277,7 @@ class gerenciadorEstoque(object):
     @Pyro5.server.expose
     def relatorioFluxoMovimentacao(self, nomeCliente, dataInicio, dataFim):
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
-        mensagem = "Relatório de fluxo de movimentação: \n"
+        mensagem = "\nRelatório de fluxo de movimentação: \n"
         user.notificacao(mensagem)
 
         for registro in self.__registros.keys():
@@ -268,19 +286,23 @@ class gerenciadorEstoque(object):
                 user.notificacao(mensagem)
 
     #Método para gerar relatório de produtos sem saída por período
+    """
     @app.route('/produto', methods=['POST'])
     @Pyro5.server.expose
     def relatorioProdutosSemSaida(self, nomeCliente, dataInicio, dataFim):
         user = Pyro5.api.Proxy(self.__listaClientes[nomeCliente])
-        mensagem = "Relatório de produtos sem saída: \n"
+        mensagem = "\nRelatório de produtos sem saída: \n"
         user.notificacao(mensagem)
 
         for produto in self.__listaProdutos.keys():
-             codigoProd = "produto " + self.__listaProdutos[produto].codigo
-             retirada = "retirado "
-             for registro in self.__registros.keys():
+            codigoProd = "produto " + self.__listaProdutos[produto].codigo
+            retirada = "retirado "
+            for registro in self.__registros.keys():
                 if dataInicio <= registro <= dataFim:
-                    if codigoProd not in self.__registros[registro] and retirada not in self.__registros[registro]:
-
-                        mensagem = "Produto " + self.__listaProdutos[produto].nome + " não teve saída no período. \n"
-                        user.notificacao(mensagem)
+                    if retirada in self.__registros[registro]:
+                        break
+                    else:
+                        if codigoProd in self.__registros[registro]:
+                            mensagem = "Produto " + self.__listaProdutos[produto].nome + " teve saída no período. \n"
+                            user.notificacao(mensagem)
+    """

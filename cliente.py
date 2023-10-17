@@ -6,6 +6,7 @@ import os
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
+from Crypto.Cipher import PKCS1_v1_5 as Cipher_PKCS1_v1_5
 
 """Classe cliente, que é responsável por fazer a comunicação com o servidor de nomes e com o servidor de estoque
     Atributos:
@@ -30,7 +31,6 @@ class cliente():
 
     def inicializaDaemon(self, daemon):
         daemon.requestLoop()
-
 
     @Pyro5.api.expose
     @Pyro5.api.callback
@@ -59,15 +59,16 @@ if __name__ == '__main__':
     
     # Interface do cliente
     while (1):
-        print("As opções do servidor são:")
+        print("\nAs opções do servidor são:")
         print("1 - Cadastrar novo produto")
         print("2 - Adicionar produto existente")
         print("3 - Retirar produto")
         print("4 - Listar produtos")
         print("5 - Gerar relatórios\n")
         opcao = input()
+
         if opcao == '1':
-            codigoProduto = input("Qual o código do produto? ")
+            codigoProduto = input("\nQual o código do produto? ")
             nomeProduto = input("Qual nome do produto? ")
             descricaoProduto = input("Qual a descrição do produto? ")
             quantidadeProduto = input("Qual a quantidade do produto? ")
@@ -78,7 +79,7 @@ if __name__ == '__main__':
                 clienteInstancia.nome, clienteInstancia.uriCliente, codigoProduto, nomeProduto, descricaoProduto, quantidadeProduto, precoUnidadeProduto, estoqueMinimoProduto)
 
         if opcao == '2':
-            codigoProduto = input("Qual o código do produto? ")
+            codigoProduto = input("\nQual o código do produto? ")
             quantidadeProduto = input("Qual a quantidade que deseja adicionar? ")
 
             servidorGerenciadorEstoque.adicionarProduto(
@@ -86,7 +87,7 @@ if __name__ == '__main__':
             
 
         if opcao == '3':
-            codigoProduto = input("Qual o código do produto? ")
+            codigoProduto = input("\nQual o código do produto? ")
             quantidadeProduto = input("Qual a quantidade do produto? ")
             servidorGerenciadorEstoque.retirarProduto(
                     clienteInstancia.nome, codigoProduto, quantidadeProduto)
@@ -95,12 +96,12 @@ if __name__ == '__main__':
             servidorGerenciadorEstoque.listarProdutos(clienteInstancia.nome)
 
         if opcao == '5':
-            print("As opções de relatório são:")
+            print("\nAs opções de relatório são:")
             print("a - Relatório de produtos em estoque")
             print("b - Relatório de registros de movimentação de produtos")
             print("c - Relatório de produtos que acabaram")
-            print("d - Relatório do fluxo de movimentação por período")
-            print("e - Relatório do produtos sem saída por período")
+            print("d - Relatório do fluxo de movimentação por período\n")
+            #print("e - Relatório do produtos sem saída por período\n")
             opcaoRelatorio = input()
 
             if opcaoRelatorio == 'a':
@@ -113,13 +114,14 @@ if __name__ == '__main__':
                 servidorGerenciadorEstoque.relatorioProdutosAcabaram(clienteInstancia.nome)
 
             if opcaoRelatorio == 'd':
-                dataInicio = input("Qual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
+                dataInicio = input("\nQual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
                 dataFim = input("Qual a data de fim do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
                 servidorGerenciadorEstoque.relatorioFluxoMovimentacao(clienteInstancia.nome, dataInicio, dataFim)
-
+"""
             if opcaoRelatorio == 'e':
-                dataInicio = input("Qual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
+                dataInicio = input("\nQual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
                 dataFim = input("Qual a data de fim do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
                 servidorGerenciadorEstoque.relatorioProdutosSemSaida(clienteInstancia.nome, dataInicio, dataFim)
+"""
                 
             
