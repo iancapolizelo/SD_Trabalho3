@@ -54,8 +54,8 @@ if __name__ == '__main__':
     uriGerenciadorEstoque = servidorNomes.lookup("Gerenciador de Estoque")
     servidorGerenciadorEstoque = Pyro5.api.Proxy(uriGerenciadorEstoque)
 
-    servidorGerenciadorEstoque.registrarCliente(
-        clienteInstancia.nome, clienteInstancia.uriCliente)
+    print(servidorGerenciadorEstoque.registrarCliente(
+        clienteInstancia.nome, clienteInstancia.uriCliente))
     
     # Interface do cliente
     while (1):
@@ -75,25 +75,27 @@ if __name__ == '__main__':
             precoUnidadeProduto = input("Qual o preço por unidade do produto? ")
             estoqueMinimoProduto = input("Qual o estoque mínimo do produto? ")
 
-            servidorGerenciadorEstoque.cadastrarProdutoNovo(
+            retorno = servidorGerenciadorEstoque.cadastrarProdutoNovo(
                 clienteInstancia.nome, clienteInstancia.uriCliente, codigoProduto, nomeProduto, descricaoProduto, quantidadeProduto, precoUnidadeProduto, estoqueMinimoProduto)
+            
+            print(retorno)
 
         if opcao == '2':
             codigoProduto = input("\nQual o código do produto? ")
             quantidadeProduto = input("Qual a quantidade que deseja adicionar? ")
 
-            servidorGerenciadorEstoque.adicionarProduto(
-                    clienteInstancia.nome, codigoProduto, quantidadeProduto)
+            retorno = servidorGerenciadorEstoque.adicionarProduto(codigoProduto, quantidadeProduto)
+
+            print(retorno)
             
 
         if opcao == '3':
             codigoProduto = input("\nQual o código do produto? ")
             quantidadeProduto = input("Qual a quantidade do produto? ")
-            servidorGerenciadorEstoque.retirarProduto(
-                    clienteInstancia.nome, codigoProduto, quantidadeProduto)
+            print(servidorGerenciadorEstoque.retirarProduto(codigoProduto, quantidadeProduto))
 
         if opcao == '4':
-            servidorGerenciadorEstoque.listarProdutos(clienteInstancia.nome)
+            print(servidorGerenciadorEstoque.listarProdutos())
 
         if opcao == '5':
             print("\nAs opções de relatório são:")
@@ -105,18 +107,18 @@ if __name__ == '__main__':
             opcaoRelatorio = input()
 
             if opcaoRelatorio == 'a':
-                servidorGerenciadorEstoque.relatorioProdutosEstoque(clienteInstancia.nome)
+                print(servidorGerenciadorEstoque.relatorioProdutosEstoque())
 
             if opcaoRelatorio == 'b':
-                servidorGerenciadorEstoque.relatorioRegistros(clienteInstancia.nome)
+                print(servidorGerenciadorEstoque.relatorioRegistros())
 
             if opcaoRelatorio == 'c':
-                servidorGerenciadorEstoque.relatorioProdutosAcabaram(clienteInstancia.nome)
+                print(servidorGerenciadorEstoque.relatorioProdutosAcabaram())
 
             if opcaoRelatorio == 'd':
                 dataInicio = input("\nQual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
                 dataFim = input("Qual a data de fim do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
-                servidorGerenciadorEstoque.relatorioFluxoMovimentacao(clienteInstancia.nome, dataInicio, dataFim)
+                print(servidorGerenciadorEstoque.relatorioFluxoMovimentacao(dataInicio, dataFim))
 """
             if opcaoRelatorio == 'e':
                 dataInicio = input("\nQual a data de início do relatório? Digite no modelo: DD/MM/AAAA -  HH:MM:SS ")
